@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Descargador de canciones a MP3</title>
+    <style>
+        body { font-family: sans-serif; max-width: 700px; margin: 2rem auto; }
+        textarea { width: 100%; height: 150px; }
+        button { padding: 0.8rem 1.5rem; font-size: 1rem; cursor: pointer; }
+        #progreso { margin-top: 1rem; color: #555; }
+    </style>
+</head>
+<body>
+    <h1>Descarga tu lista de canciones en MP3</h1>
+    <p>Pega una canción por línea (ej: <em>Bohemian Rhapsody Queen</em>)</p>
+    <form id="formulario">
+        <textarea id="canciones" name="canciones" placeholder="Canción 1&#10;Canción 2&#10;Canción 3"></textarea>
+        <br><br>
+        <button type="submit">Descargar todas</button>
+    </form>
+    <div id="progreso"></div>
+
+    <script>
+        document.getElementById('formulario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const canciones = document.getElementById('canciones').value;
+            const progreso = document.getElementById('progreso');
+            progreso.textContent = 'Procesando... (esto puede tardar)';
+
+            const respuesta = await fetch('/descargar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ canciones })
+            });
+
+            if (respuesta.ok) {
+                const blob = await respuesta.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'canciones.zip';
+                a.click();
+                progreso.textContent = '¡Descarga completada!';
+            } else {
+                progreso.textContent = 'Error en la descarga.';
+            }
+        });
+    </script>
+</body>
+</html>
